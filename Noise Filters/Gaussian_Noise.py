@@ -5,23 +5,26 @@ from tkinter import filedialog
 
 def gaussian_filter(size, sigma):
     x, y = np.mgrid[-size // 2 + 1:size // 2 + 1, -size // 2 + 1:size // 2 + 1]
-    g = np.exp(-((x ** 2 + y ** 2) / (2.0 * sigma ** 2))) / (2 * np.pi * sigma ** 2)
-    return g / g.sum()
+    Generated_Smoos = np.exp(-((x ** 2 + y ** 2) / (2.0 * sigma ** 2))) / (2 * np.pi * sigma ** 2)
+    # print(Generated_Smoos)
+    return Generated_Smoos / Generated_Smoos.sum()
 
 def denoise_image(image, size, sigma):
     image = image.convert('L')
     img_array = np.array(image)
     height, width = img_array.shape
-    filter_kernel = gaussian_filter(size, sigma)
-    print("Filter: ",filter_kernel)
+    Temp_Kernal = gaussian_filter(size, sigma)
+    print("Filter: ",Temp_Kernal)
     
-    smoothed_image = np.zeros((height - size + 1, width - size + 1))
+    Smoos_Image = np.zeros((height - size + 1, width - size + 1))
     for i in range(size // 2, height - size // 2):
         for j in range(size // 2, width - size // 2):
-            window = img_array[i - size // 2:i + size // 2 + 1, j - size // 2:j + size // 2 + 1]
-            smoothed_image[i - size // 2, j - size // 2] = np.sum(window * filter_kernel)
+            # Main_Img = img_array[i - size // 4:i + size // 4 + 2, j - size // 2:j + size // 2 + 1]
+            Main_Img = img_array[i - size // 2:i + size // 2 + 1, j - size // 2:j + size // 2 + 1]
+            
+            Smoos_Image[i - size // 2, j - size // 2] = np.sum(Main_Img * Temp_Kernal)
 
-    denoised_image = Image.fromarray(smoothed_image.astype('uint8'))
+    denoised_image = Image.fromarray(Smoos_Image.astype('uint8'))
     return denoised_image
 
 class DenoiseImageGui:
@@ -33,6 +36,7 @@ class DenoiseImageGui:
         self.browse_button.pack(pady=10)
         self.original_image_label = Label(master)
         self.original_image_label.pack(side=LEFT, padx=10)
+        
         self.denoised_image_label = Label(master)
         self.denoised_image_label.pack(side=LEFT, padx=10)
         self.denoised_image = None
@@ -47,7 +51,7 @@ class DenoiseImageGui:
             original_image = ImageTk.PhotoImage(image)
             self.original_image_label.config(image=original_image)
             self.original_image_label.image = original_image
-            
+
             self.denoised_image = denoise_image(image, 5, 1)
             denoised_image = ImageTk.PhotoImage(self.denoised_image)
             self.denoised_image_label.config(image=denoised_image)
