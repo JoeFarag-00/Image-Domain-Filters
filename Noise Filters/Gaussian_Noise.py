@@ -3,20 +3,21 @@ from tkinter import *
 from PIL import ImageTk, Image
 from tkinter import filedialog
 
-def gaussian_filter(size, sigma):
+def Gaussian_Filter(size, sigma):
     x, y = np.mgrid[-size // 2 + 1:size // 2 + 1, -size // 2 + 1:size // 2 + 1]
     Generated_Smoos = np.exp(-((x ** 2 + y ** 2) / (2.0 * sigma ** 2))) / (2 * np.pi * sigma ** 2)
     # print(Generated_Smoos)
     return Generated_Smoos / Generated_Smoos.sum()
 
-def denoise_image(image, size, sigma):
+def Demina_Image(image, size, sigma):
     image = image.convert('L')
     img_array = np.array(image)
     height, width = img_array.shape
-    Temp_Kernal = gaussian_filter(size, sigma)
+    Temp_Kernal = Gaussian_Filter(size, sigma)
     print("Filter: ",Temp_Kernal)
     
     Smoos_Image = np.zeros((height - size + 1, width - size + 1))
+    
     for i in range(size // 2, height - size // 2):
         for j in range(size // 2, width - size // 2):
             # Main_Img = img_array[i - size // 4:i + size // 4 + 2, j - size // 2:j + size // 2 + 1]
@@ -27,7 +28,7 @@ def denoise_image(image, size, sigma):
     denoised_image = Image.fromarray(Smoos_Image.astype('uint8'))
     return denoised_image
 
-class DenoiseImageGui:
+class GF_GUI:
     
     def __init__(self, master):
         self.master = master
@@ -52,11 +53,11 @@ class DenoiseImageGui:
             self.original_image_label.config(image=original_image)
             self.original_image_label.image = original_image
 
-            self.denoised_image = denoise_image(image, 5, 1)
+            self.denoised_image = Demina_Image(image, 5, 1)
             denoised_image = ImageTk.PhotoImage(self.denoised_image)
             self.denoised_image_label.config(image=denoised_image)
             self.denoised_image_label.image = denoised_image
 
 root = Tk()
-gui = DenoiseImageGui(root)
+gui = GF_GUI(root)
 root.mainloop()
