@@ -12,6 +12,10 @@ def ReadImage(Path):
 def SaveImage(Path,Image):
     cv2.imwrite(Path,Image)
 
+def ShowImage(WindowTitle,Image):
+    cv2.imshow(f'{WindowTitle}',Image)
+    cv2.waitKey(0)
+    
 def PadImageWithZeros(Image):
     r,c = Image.shape[0],Image.shape[1]
     PaddedImage=numpy.zeros((r + 2, c + 2), dtype=Image.dtype)
@@ -43,8 +47,10 @@ BlurredImage = BlurImage(PaddedImage)
 
 BlurredImage = Int32ToUint8(BlurredImage)
 
-Mask = BlurredImage-PaddedImage
+# check these steps or should i save the blurredimage
 
-SharpenedImage = Mask + PaddedImage
+# Mask = BlurredImage-PaddedImage
 
-SaveImage('Project\Spatial Domain Filters\Smoothing\Averaging Filter\Output.png',SharpenedImage)
+# SharpenedImage = Mask + PaddedImage
+
+# SaveImage('Project\Spatial Domain Filters\Smoothing\Averaging Filter\Output.png',SharpenedImage)
