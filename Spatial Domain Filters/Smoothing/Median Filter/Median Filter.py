@@ -41,7 +41,6 @@ def BlurImage(PaddedImage):
             Kernel = PaddedImage[r - 1:r + 2, c - 1:c + 2]
             Median = CalculateMedian(Kernel)
             BlurredImaged[r, c] = Median
-        break
     return BlurredImaged
 
 Path = GetImagePath()
@@ -54,8 +53,10 @@ BlurredImage = BlurImage(PaddedImage)
 
 BlurredImage = Int32ToUint8(BlurredImage)
 
-Mask = BlurredImage-PaddedImage
+# check these steps or should i save the blurredimage
 
-SharpenedImage = Mask + PaddedImage
+# Mask = BlurredImage-PaddedImage
 
-SaveImage('Project\Spatial Domain Filters\Smoothing\Median Filter\Output.png',SharpenedImage)
+# SharpenedImage = Mask + PaddedImage
+
+# SaveImage('Project\Spatial Domain Filters\Smoothing\Median Filter\Output.png',SharpenedImage)
