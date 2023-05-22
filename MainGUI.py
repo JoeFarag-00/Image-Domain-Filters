@@ -10,6 +10,7 @@ import re
 from tkinter import Tk, Label, Text, Button, Menu
 import tkinter
 import sys
+import cv2
 
 customtkinter.set_appearance_mode('dark')
 customtkinter.set_default_color_theme('green')
@@ -19,6 +20,7 @@ class MainGUI():
     @staticmethod
     def Load_Dynamic_Operations():
         global Original_image
+        global image_path
         image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg;*.png;*.bmp;*.gif")])
         if image_path:
             Original_image = Image.open(image_path).convert("L")
@@ -27,168 +29,330 @@ class MainGUI():
             image_display = customtkinter.CTkLabel(LoadImg_Frame,image=photo, text=" ")
             image_display.pack()
             Load_Image_Btn.destroy()
-            
-        if IsNoise:  
-            if Selected == 1:
+                
+            if IsNoise:  
+                if Selected == 1:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Threshold_Lbl = customtkinter.CTkLabel(Main, text="Threshold:", font=("System", 20, "bold"))
+                    Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global Threshold
+                    Threshold = customtkinter.CTkEntry(Main, placeholder_text="Thres < 1")
+                    Threshold.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
 
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Threshold_Lbl = customtkinter.CTkLabel(Main, text="Threshold:", font=("System", 20, "bold"))
-                Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                global Threshold
-                Threshold = customtkinter.CTkEntry(Main, placeholder_text="0.1-1")
-                Threshold.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                elif Selected == 2:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Threshold_Lbl = customtkinter.CTkLabel(Main, text="Enter SD: ", font=("System", 20, "bold"))
+                    Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global Sd_Value 
+                    Sd_Value = customtkinter.CTkEntry(Main, placeholder_text="Enter SD")
+                    Sd_Value.place(x=Main.winfo_screenwidth()/2 - 770,y=Main.winfo_screenheight()/2 + 180, anchor="center")
 
-                
-            elif Selected == 2:
-                
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Threshold_Lbl = customtkinter.CTkLabel(Main, text="Enter SD: ", font=("System", 20, "bold"))
-                Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                global Sd_Value 
-                Sd_Value = customtkinter.CTkEntry(Main, placeholder_text="Enter SD")
-                Sd_Value.place(x=Main.winfo_screenwidth()/2 - 770,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                elif Selected == 3:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Threshold_Lbl = customtkinter.CTkLabel(Main, text="Range Min:", font=("System", 20, "bold"))
+                    Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    RangeB_Lbl = customtkinter.CTkLabel(Main, text="Range Max:", font=("System", 20, "bold"))
+                    RangeB_Lbl.place(x=Main.winfo_screenwidth()/2 - 660,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global ErangeA ,ErangeB 
+                    ErangeA = customtkinter.CTkEntry(Main, placeholder_text="Min")
+                    ErangeA.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    ErangeB = customtkinter.CTkEntry(Main, placeholder_text="Max")
+                    ErangeB.place(x=Main.winfo_screenwidth()/2 - 540,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+            elif IsSharpen:  
+                if Selected == 1:
 
-            elif Selected == 3:
-                
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Threshold_Lbl = customtkinter.CTkLabel(Main, text="Range Min:", font=("System", 20, "bold"))
-                Threshold_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                RangeB_Lbl = customtkinter.CTkLabel(Main, text="Range Max:", font=("System", 20, "bold"))
-                RangeB_Lbl.place(x=Main.winfo_screenwidth()/2 - 660,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                global ErangeA ,ErangeB 
-                ErangeA = customtkinter.CTkEntry(Main, placeholder_text="Min")
-                ErangeA.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                ErangeB = customtkinter.CTkEntry(Main, placeholder_text="Max")
-                ErangeB.place(x=Main.winfo_screenwidth()/2 - 540,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-        elif IsSharpen:  
-            if Selected == 1:
+                    global IWhichKernel
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Kernel_Lbl = customtkinter.CTkLabel(Main, text="Kernel: ", font=("System", 20, "bold"))
+                    Kernel_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    IWhichKernel = customtkinter.CTkEntry(Main, placeholder_text="1 - 4")
+                    IWhichKernel.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
 
-                global IWhichKernel
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                elif Selected == 2:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    umhf_Lbl = customtkinter.CTkLabel(Main, text="K: ", font=("System", 20, "bold"))
+                    umhf_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global K_val 
+                    K_val = customtkinter.CTkEntry(Main, placeholder_text="K >= 0 ")
+                    K_val.place(x=Main.winfo_screenwidth()/2 - 800,y=Main.winfo_screenheight()/2 + 180, anchor="center")
                 
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Kernel_Lbl = customtkinter.CTkLabel(Main, text="Kernel: ", font=("System", 20, "bold"))
-                Kernel_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                IWhichKernel = customtkinter.CTkEntry(Main, placeholder_text="1 - 4")
-                IWhichKernel.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                elif Selected == 3:
 
-            elif Selected == 2:
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                elif Selected == 4:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Sd_Lbl = customtkinter.CTkLabel(Main, text="SD: ", font=("System", 20, "bold"))
+                    Sd_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global StandG
+                    StandG = customtkinter.CTkEntry(Main, placeholder_text="SD")
+                    StandG.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+    
+            elif IsSmoos:  
                 
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                umhf_Lbl = customtkinter.CTkLabel(Main, text="K: ", font=("System", 20, "bold"))
-                umhf_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                global K_val 
-                K_val = customtkinter.CTkEntry(Main, placeholder_text="K >= 0 ")
-                K_val.place(x=Main.winfo_screenwidth()/2 - 800,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-            
-            elif Selected == 3:
+                if Selected == 2:
 
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                # robert = customtkinter.CTkLabel(Main, text="Robert Loop", font=("System", 20, "bold"))
-                # robert.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                # global robertb 
-                # robertb = customtkinter.CTkEntry(Main, placeholder_text="Loop")
-                # robertb.place(x=Main.winfo_screenwidth()/2 - 700,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                elif Selected == 3:
 
-            elif Selected == 4:
-                
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Sd_Lbl = customtkinter.CTkLabel(Main, text="SD: ", font=("System", 20, "bold"))
-                Sd_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                global StandG
-                StandG = customtkinter.CTkEntry(Main, placeholder_text="SD")
-                StandG.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-
-                   
-        elif IsSmoos:  
-            
-            
-            if Selected == 2:
-
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Adpat_Lbl = customtkinter.CTkLabel(Main, text="Adapt", font=("System", 20, "bold"))
-                Adpat_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-
-            elif Selected == 3:
-
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-      
-            elif Selected == 1:
-
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Median_Lbl = customtkinter.CTkLabel(Main, text="Median Filter ", font=("System", 20, "bold"))
-                Median_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-            
-            elif Selected == 4:
-
-                Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-                Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-                
-                Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
-                Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
-
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
         
-        MainGUI.Operate_Filter()
+                elif Selected == 1:
+
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Median_Lbl = customtkinter.CTkLabel(Main, text="Median Filter ", font=("System", 20, "bold"))
+                    Median_Lbl.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                
+                elif Selected == 4:
+
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+            
+            elif IsTrans:
+                if Trans == 1:
+                    
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+
+                elif Trans == 2:
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+
+                elif Trans == 3:
+                    # MainGUI.Draw_Special_Room()
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+
+                elif Trans == 4:
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Interpolation",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Kfactorlb = customtkinter.CTkLabel(Main, text="Scale: ", font=("System", 20, "bold"))
+                    Kfactorlb.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global Kfactor
+                    Kfactor = customtkinter.CTkEntry(Main, placeholder_text="K Factor")
+                    Kfactor.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                
+                elif Trans == 5:
+
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Interpolation",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Kfactorlb = customtkinter.CTkLabel(Main, text="Scale: ", font=("System", 20, "bold"))
+                    Kfactorlb.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global BiLinearscale
+                    BiLinearscale = customtkinter.CTkEntry(Main, placeholder_text="Scale: ")
+                    BiLinearscale.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                elif Trans == 6:
+                    Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Interpolation",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
+                    Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 40 ,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Reset_Btn = customtkinter.CTkButton(Main, text="RESET",width=100, height=62, font=("System", 30, "bold"), fg_color="darkred", command=lambda:MainGUI.ResetWindow())
+                    Reset_Btn.place(x=Main.winfo_screenwidth()/2 + 150,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    Kfactorlb = customtkinter.CTkLabel(Main, text="Scale: ", font=("System", 20, "bold"))
+                    Kfactorlb.place(x=Main.winfo_screenwidth()/2 - 900,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+                    
+                    global BiCubicscale
+                    BiCubicscale = customtkinter.CTkEntry(Main, placeholder_text="Scale: ")
+                    BiCubicscale.place(x=Main.winfo_screenwidth()/2 - 780,y=Main.winfo_screenheight()/2 + 180, anchor="center")
 
     def Operate_Filter():
         global Output_Image_Lbl
+        global Special_Fourier_Lbl
+        
+        if IsTrans:
+            if Trans == 1:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Histogram Equalization')
+                from Histogram_Equalization import Histo_Equa
+                Do_Histo_Equa = Histo_Equa()
+                # Input_Image = np.array(Original_image)
+                Do_Histo_Equa.Histogram_Equalization(image_path)
+                Output_image = Do_Histo_Equa.Histogram_Equalization(image_path)
+                print("\nHistogram_Equalization:\n",Output_image)
+                
+                Final_Image = Image.fromarray(Output_image)
+                Final_Image = Final_Image.resize((550, 550))
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+                
+            elif Trans == 2:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Histogram Matching')
+                from Histogram_Matching import Histo_Match
+                Do_Histo_Spec = Histo_Match()   
+                # Input_Image = np.array(Original_image)
+                # Do_Histo_Match.histogram_specification()
+                Do_Histo_Spec.histogram_specification(image_path)
+                Output_image = Do_Histo_Spec.histogram_specification(image_path)
+                print("\nHistogram_Equalization:\n",Output_image)
+                
+                Final_Image = Image.fromarray(Output_image)
+                Final_Image = Final_Image.resize((550, 550))
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+            
+            elif Trans == 3:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Fourier Transformation')
+                from Fourier_Transform import Fourier
+                Do_Fourier = Fourier()
+                
+                Fourier_Img = Do_Fourier.Shift(image_path)
+                print("\nFourier Image:\n",Fourier_Img)
+                Fourier_Img = np.array(Fourier_Img)
+                Final_Image = Image.fromarray(Fourier_Img)
+                # Final_Image = Final_Image.resize((550, 550))
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+                
+                Inverse_Img = Do_Fourier.Inverse_Fourier(image_path)
+                print("\nInverse Image:\n",Inverse_Img)
+                
+                Final_Image_Inverse = Image.fromarray(Inverse_Img)
+                # Final_Image_Inverse = Final_Image.resize((550, 550))
+                Output_Image = ImageTk.PhotoImage(Final_Image_Inverse)
+                Output_Image_Lbl = customtkinter.CTkLabel(Inverse_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+                Do_Fourier.Show_Image()
+                
+            elif Trans == 4:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Interpolation')
+                from Interpolation import Interpolate
+                Do_Interpolate = Interpolate()
+                Input_Image = np.array(Original_image)
+                scalefactor = float(Kfactor.get())
+                Scaled_Image = Do_Interpolate.nearest_neighbor_interpolation(scalefactor,Input_Image)
+                print("\nLinear Interpolation:\n",Scaled_Image)
+
+                Final_Image = Image.fromarray(Scaled_Image)
+                # Final_Image = Final_Image.resize((550, 550))
+                Final_Image = np.array(Final_Image)
+                cv2.imshow( "Linear Interpolation", Final_Image)
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+            
+            elif Trans == 5:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Interpolation')
+                from Interpolation import Interpolate
+                Do_Interpolate = Interpolate()
+                Input_Image = np.array(Original_image)
+                scalefactor = float(BiLinearscale.get())
+                Scaled_Image = Do_Interpolate.bilinear_interpolation(scalefactor,Input_Image)
+                print("\Bilinear Interpolation:\n",Scaled_Image)
+                
+                Final_Image = Image.fromarray(Scaled_Image)
+                Final_Image = np.array(Final_Image)
+                cv2.imshow( "Bilinear Interpolation", Final_Image)
+                # Final_Image = Final_Image.resize((250, 250))
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
+            
+            elif Trans == 6:
+                sys.path.append('Image-Domain-Filters/Transform & Frequency Domain Filters/Interpolation')
+                from Interpolation import Interpolate
+                Do_Interpolate = Interpolate()
+                Input_Image = np.array(Original_image)
+                scalefactor = float(BiCubicscale.get())
+                Scaled_Image = Do_Interpolate.bicubic_interpolation(scalefactor,Input_Image)
+                # Input_Image = np.array(Original_image)
+                # Do_Histo_Match.histogram_specification()
+                print("\BiCubic Interpolation:\n",Scaled_Image)
+                
+                Final_Image = Image.fromarray(Scaled_Image)
+                Final_Image = np.array(Final_Image)
+                cv2.imshow( "BiCubic Interpolation", Final_Image)
+                # Final_Image = Final_Image.resize((250, 250))
+                
+                Output_Image = ImageTk.PhotoImage(Final_Image)
+                Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
+                Output_Image_Lbl.pack()
 
         if IsSmoos:
             if Selected == 1:
@@ -241,7 +405,6 @@ class MainGUI():
             
             elif Selected == 4:
                 
-                
                 sys.path.append('Image-Domain-Filters/Spatial Domain Filters/Smoothing Filter/Gaussian Filter (Ahmed)')
                 from Gaussian_Filter import ApplyGaussianFilter
 
@@ -254,8 +417,7 @@ class MainGUI():
                 Output_Image = ImageTk.PhotoImage(Final_Image)
                 Output_Image_Lbl = customtkinter.CTkLabel(Final_Image_Frame,image=Output_Image, text=" ")
                 Output_Image_Lbl.pack()
-        
-                    
+      
         if IsNoise:
             if Selected == 1:
                 Thres = Threshold.get()
@@ -408,117 +570,191 @@ class MainGUI():
                 
 
     def Draw_Operation_Room():
-        MainGUI.DestroyAll()
-        Main.geometry("1200x775".format(ScreenWidth, ScreenHeight))
-        Filter_Page_Label = customtkinter.CTkLabel(Main, text=Choosen, font=("System", 40, "bold"))
-        Filter_Page_Label.place(x=ScreenWidth/2-350, y=ScreenHeight/2 - 500, anchor="center")
+        global Back_Button
         global LoadImg_Frame
-        LoadImg_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
-        LoadImg_Frame.place(x=20, y=90)
-        
-        global Final_Image_Frame
-        Final_Image_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
-        Final_Image_Frame.place(x=630, y=90)
-
         global Load_Image_Btn
-        Load_Image_Btn = customtkinter.CTkButton(Main, text="Load Image",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Load_Dynamic_Operations())        
-        Load_Image_Btn.place(x=Main.winfo_screenwidth()/2 - 675,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+        global Final_Image_Frame
+        global Inverse_Image_Frame
+        if Choosen != "Fourier Transform":
+            MainGUI.DestroyAll()
+            Main.geometry("1200x775".format(ScreenWidth, ScreenHeight))
+            Filter_Page_Label = customtkinter.CTkLabel(Main, text=Choosen, font=("System", 40, "bold"))
+            Filter_Page_Label.place(x=ScreenWidth/2-350, y=ScreenHeight/2 - 500, anchor="center")
 
-        
-    def Apply_TransFreq_Filter():
+            Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.GoBack_ChooseSameType())        
+            Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
 
-        if Selected == 1:
-            pass
-            # Apply_Filter_Button = customtkinter.CTkButton(Main, text="Apply Filter",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Operate_Filter())    
-            # Apply_Filter_Button.place(x=Main.winfo_screenwidth()/2 - 700,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+            LoadImg_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
+            LoadImg_Frame.place(x=20, y=90)
+
+            Final_Image_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
+            Final_Image_Frame.place(x=630, y=90)
+
+            Load_Image_Btn = customtkinter.CTkButton(Main, text="Load Image",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Load_Dynamic_Operations())        
+            Load_Image_Btn.place(x=Main.winfo_screenwidth()/2 - 675,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+        else:
+            MainGUI.DestroyAll()
+            Main.geometry("1750x775".format(ScreenWidth, ScreenHeight))
+            Filter_Page_Label = customtkinter.CTkLabel(Main, text=Choosen, font=("System", 40, "bold"))
+            Filter_Page_Label.place(x=ScreenWidth/2 - 70, y=ScreenHeight/2 - 500, anchor="center")
             
-        elif Selected == 2:
-            pass
-        elif Selected == 3:
-            pass
-        elif Selected == 4:
-            pass
-        elif Selected == 5:
-            pass
-    
-          
+            Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.GoBack_ChooseSameType())        
+            Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
+
+            LoadImg_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
+            LoadImg_Frame.place(x=20, y=90)
+
+            Final_Image_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
+            Final_Image_Frame.place(x=600, y=90)
+
+            Inverse_Image_Frame = customtkinter.CTkFrame(Main, width=550, height=550)
+            Inverse_Image_Frame.place(x=1180, y=90)
+
+            Load_Image_Btn = customtkinter.CTkButton(Main, text="Load Image",width=200, height=62, font=("System", 30, "bold"), fg_color="darkgreen", command=lambda:MainGUI.Load_Dynamic_Operations())        
+            Load_Image_Btn.place(x=Main.winfo_screenwidth()/2 - 675,y=Main.winfo_screenheight()/2 + 180, anchor="center")
+
+            
+   
     def DestroyAll():
         widgets = Main.winfo_children()
+        # print(widgets)
         for widget in widgets:
-            if hasattr(widget, 'delete'):
-                widget.delete(0, 'end')
-            elif hasattr(widget, 'destroy'):
-                widget.destroy()
+            # if hasattr(widget, 'delete'):
+            #     widget.delete(0, 'end')
+            # elif hasattr(widget, 'destroy'):
+            widget.destroy()
                 
     def Start_Page_Continue():
         MainGUI.DestroyAll()
         MainGUI.Choose_Domain()
     
     def ResetWindow():
-        Main.destroy()
-        os.startfile(r"MainGUI.py")
-
+        MainGUI.DestroyAll()
+        MainGUI.Draw_Operation_Room()
+    
+    def GoBack_ChooseSameType():
+        MainGUI.DestroyAll()
+        ScreenWidth = Main.winfo_screenwidth()
+        ScreenHeight = Main.winfo_screenheight()
+        Main.geometry("1000x580".format(ScreenWidth, ScreenHeight))
+        
+        if IsNoise:
+            MainGUI.Noise_Filters_Page()
+        elif IsSharpen:
+            MainGUI.Sharpening_Filters_Page()
+        elif IsSmoos:
+            MainGUI.Smoothing_Filters_Page()
+        elif IsTrans:
+            MainGUI.TransFreq_Domain_Page()
+            
+        # Main.destroy()
+        # os.startfile(r"MainGUI.py")
+    
+    def GoBack_ChooseDifferentFilter():
+        MainGUI.DestroyAll()
+        
+        ScreenWidth = Main.winfo_screenwidth()
+        ScreenHeight = Main.winfo_screenheight()
+        Main.geometry("1000x580".format(ScreenWidth, ScreenHeight))
+        
+        if IsSpacial:
+            MainGUI.Spatial_Domain_Page()
+        elif IsTrans:
+            MainGUI.TransFreq_Domain_Page()
+        # Main.destroy()
+        # os.startfile(r"MainGUI.py")
+        
     def TransFreq_Confirmation():
         global Choosen
+        global Trans
         global Selected
+        global IsNoise
+        global IsSharpen
+        global IsSmoos
+        global IsTrans
+        global BTrans
+
+        IsTrans = True
+        
+        IsNoise = False
+        IsSharpen = False
+        IsSmoos = False
+        
+        Selected = 0
         Choosen = TransFreq_Filters_ComboBox.get()
 
         if TransFreq_Filters_ComboBox.get():
             TransFreq_Type = TransFreq_Filters_ComboBox.get()
 
             if TransFreq_Type == "Histogram Equalization":
-                Selected = 1
-                print("Histo Equa")
-                
-                # Main.destroy()
-                os.startfile(r"Image-Domain-Filters/Transform & Frequency Domain Filters/Histogram Equalization/Histogram Equalization.ipynb.py")
-                
+                Trans = 1
+                IsTrans = True
                 Choosen = TransFreq_Type
-                
+                MainGUI.Draw_Operation_Room()
+
             elif TransFreq_Type == "Histogram Specification":
-                Selected = 2
-                print("Histo Spec")
+                Trans = 2
+                IsTrans = True
                 Choosen = TransFreq_Type
+                MainGUI.Draw_Operation_Room()
                 
             elif TransFreq_Type == "Fourier Transform":
-                Selected = 3
-                print("Fourier")
+                Trans = 3
+                IsTrans = True
                 Choosen = TransFreq_Type
+                MainGUI.Draw_Operation_Room()
                 
-            elif TransFreq_Type == "Interpolation":
-                Selected = 4
-                print("Interpolate")
+            elif TransFreq_Type == "Linear Interpolation":
+                Trans = 4
+                IsTrans = True
                 Choosen = TransFreq_Type
+                MainGUI.Draw_Operation_Room()
+
+            elif TransFreq_Type == "Bicubic Interpolation":
+                Trans = 6
+                IsTrans = True
+                Choosen = TransFreq_Type
+                MainGUI.Draw_Operation_Room()
+                
+            elif TransFreq_Type == "Bilinear Interpolation":
+                Trans = 5
+                IsTrans = True
+                Choosen = TransFreq_Type
+                MainGUI.Draw_Operation_Room()
+           
+            # MainGUI.Draw_Operation_Room()
 
     def Spatial_Confirmation():
         global Selected
         global Choosen
         global umhf
+        global Trans
+        global IsSpacial
+        
+        IsSpacial = True
+        Trans = 0
+        
         if IsSmoos:
             if Spatial_Smoothing_Filter_ComboBox.get():
                 Smoothing_Type = Spatial_Smoothing_Filter_ComboBox.get()
                 
                 if Smoothing_Type == "Median Filter":
                     Selected = 1
-                    print("median")
                     Choosen = Smoothing_Type
                     MainGUI.Draw_Operation_Room()
 
                 elif Smoothing_Type == "Adaptive Filter":
                     Selected = 2
-                    print("adapt")
                     Choosen = Smoothing_Type
                     MainGUI.Draw_Operation_Room()
                     
                 elif Smoothing_Type == "Averaging Filter":
                     Selected = 3
-                    print("avg")
                     Choosen = Smoothing_Type
                     MainGUI.Draw_Operation_Room()
                     
                 elif Smoothing_Type == "Gaussian Filter":
                     Selected = 4
-                    print("smoos")
                     Choosen = Smoothing_Type
                     MainGUI.Draw_Operation_Room()
         
@@ -528,33 +764,28 @@ class MainGUI():
                 
                 if Sharpen_Type == "Laplacian Operator":
                     Selected = 1
-                    print("laplas")
                     Choosen = Sharpen_Type
                     MainGUI.Draw_Operation_Room()
                     
                 elif Sharpen_Type == "Unsharp Masking & Highboost Gaussian":
                     Selected = 2
-                    print("unsharp")
                     Choosen = Sharpen_Type
                     umhf = 1
                     MainGUI.Draw_Operation_Room()
                 
                 elif Sharpen_Type == "Unsharp Masking & Highboost Median":
                     Selected = 2
-                    print("unsharp")
                     Choosen = Sharpen_Type
                     umhf = 2
                     MainGUI.Draw_Operation_Room()
                     
                 elif Sharpen_Type == "Roberts Cross-Gradient":
                     Selected = 3
-                    print("robert")
                     Choosen = Sharpen_Type
                     MainGUI.Draw_Operation_Room()
                     
                 elif Sharpen_Type == "Sobel Operators":
                     Selected = 4
-                    print("sobel")
                     Choosen = Sharpen_Type
                     MainGUI.Draw_Operation_Room()
         
@@ -564,24 +795,19 @@ class MainGUI():
                 
                 if Noise_Type == "Impulse Noise":
                     Selected = 1
-                    print("Impulse")
                     Choosen = Noise_Type
                     MainGUI.Draw_Operation_Room()
                     
                 elif Noise_Type == "Gaussian Noise":
                     Selected = 2
-                    print("Gauss")
                     Choosen = Noise_Type
                     MainGUI.Draw_Operation_Room()
         
                 elif Noise_Type == "Uniform Noise":
                     Selected = 3
-                    print("uniform")
                     Choosen = Noise_Type
                     MainGUI.Draw_Operation_Room()
                 
-
-
     def Smoothing_Filters_Page():
         MainGUI.DestroyAll()
         global IsSmoos
@@ -590,12 +816,23 @@ class MainGUI():
         IsSmoos = True
         IsSharpen = False
         IsNoise = False
+        
+        global IsSpacial
+        IsSpacial = True
+        
         Smoothing_Types = ["...", "Median Filter", "Adaptive Filter", "Averaging Filter", "Gaussian Filter"]
+        
         ChooseButtonLabel = customtkinter.CTkLabel(Main, text="Choose A Smoothing Filter", font=("System", 40, "bold"))
         global Spatial_Smoothing_Filter_ComboBox
+        
         Spatial_Smoothing_Filter_ComboBox = customtkinter.CTkComboBox(Main, values=Smoothing_Types, width=400, height=55, font=("System", 30, "bold"))
+        
+        Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.GoBack_ChooseDifferentFilter())        
+        Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
+
         ConfirmButton = customtkinter.CTkButton(Main, text="Confirm", command=lambda: MainGUI.Spatial_Confirmation(), width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         QuitButton = customtkinter.CTkButton(Main, text="Quit", command=quit, width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
+        
         ChooseButtonLabel.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight()/2 - 400, anchor="center")
         Spatial_Smoothing_Filter_ComboBox.place(x=Main.winfo_screenwidth()/2 - 520, y=Main.winfo_screenheight()/2 - 250, anchor="center")
         ConfirmButton.place(x=Main.winfo_screenwidth()/2 - 220, y=Main.winfo_screenheight() /2 - 250, anchor="center")
@@ -614,8 +851,15 @@ class MainGUI():
         ChooseButtonLabel = customtkinter.CTkLabel(Main, text="Choose A Sharpening Filter", font=("System", 40, "bold"))
         global Spatial_Sharpening_Filter_ComboBox
         Spatial_Sharpening_Filter_ComboBox = customtkinter.CTkComboBox(Main, values=Sharpening_Types, width=400, height=55, font=("System", 30, "bold"))
+        
+        global IsSpacial
+        IsSpacial = True
+        Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.GoBack_ChooseDifferentFilter())        
+        Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
+
         ConfirmButton = customtkinter.CTkButton(Main, text="Confirm", command=lambda: MainGUI.Spatial_Confirmation(), width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         QuitButton = customtkinter.CTkButton(Main, text="Quit", command=quit, width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
+        
         ChooseButtonLabel.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight()/2 - 400, anchor="center")
         Spatial_Sharpening_Filter_ComboBox.place(x=Main.winfo_screenwidth()/2 - 520, y=Main.winfo_screenheight()/2 - 250, anchor="center")
         ConfirmButton.place(x=Main.winfo_screenwidth()/2 - 220, y=Main.winfo_screenheight() /2 - 250, anchor="center")
@@ -634,6 +878,12 @@ class MainGUI():
         ChooseButtonLabel = customtkinter.CTkLabel(Main, text="Choose A Noise Addition Filter", font=("System", 40, "bold"))
         global Spatial_Noise_Filter_ComboBox
         Spatial_Noise_Filter_ComboBox = customtkinter.CTkComboBox(Main, values=Noise_Types, width=400, height=55, font=("System", 30, "bold"))
+           
+        global IsSpacial
+        IsSpacial = True
+        Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.GoBack_ChooseDifferentFilter())        
+        Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
+
         ConfirmButton = customtkinter.CTkButton(Main, text="Confirm", command=lambda: MainGUI.Spatial_Confirmation(), width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         QuitButton = customtkinter.CTkButton(Main, text="Quit", command=quit, width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         ChooseButtonLabel.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight()/2 - 400, anchor="center")
@@ -648,6 +898,7 @@ class MainGUI():
         Smoothing_Btn = customtkinter.CTkButton(Main, text="Smoothing Filters", width=500, height=125, font=("System", 40, "bold"), fg_color="darkgreen", command=lambda: MainGUI.Smoothing_Filters_Page())
         Sharpening_Btn = customtkinter.CTkButton(Main, text="Sharpening Filters", width=500, height=125, font=("System", 40, "bold"), fg_color="darkgreen", command=lambda: MainGUI.Sharpening_Filters_Page())
         Noise_Btn = customtkinter.CTkButton(Main, text="Noise Filters", width=500, height=125, font=("System", 40, "bold"), fg_color="darkgreen", command=lambda: MainGUI.Noise_Filters_Page())
+       
         ChooseButtonLabel.place(x=Main.winfo_screenwidth()/2 - 450, y=Main.winfo_screenheight()/2 - 480, anchor="center")
         Smoothing_Btn.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight() / 2 - 370, anchor="center")
         Sharpening_Btn.place(x=Main.winfo_screenwidth()/2 -450 ,y=Main.winfo_screenheight() / 2 - 220, anchor="center")
@@ -655,13 +906,18 @@ class MainGUI():
 
     def TransFreq_Domain_Page():
         MainGUI.DestroyAll()
-        TransFreq_Types = ["...", "Histogram Equalization", "Histogram Specification", "Fourier Transform", "Interpolation"]
-        ChooseClassLbl = customtkinter.CTkLabel(Main, text="Choose A Transform/Frequency Filter", font=("System", 40, "bold"))
+        TransFreq_Types = ["...", "Histogram Equalization", "Histogram Specification", "Fourier Transform", "Linear Interpolation", "Bilinear Interpolation", "Bicubic Interpolation"]
+        ChooseClassLbl = customtkinter.CTkLabel(Main, text="Choose A Transform / Frequency Filter", font=("System", 40, "bold"))
+
+        Back_Button = customtkinter.CTkButton(Main, text="<- Back",width=80, height=32, font=("System", 20, "bold"), fg_color="DarkRed", command=lambda:MainGUI.Choose_Domain())        
+        Back_Button.place(x=Main.winfo_screenwidth()/2 - 880,y=Main.winfo_screenheight()/2 - 490, anchor="center")
+
         global TransFreq_Filters_ComboBox
         TransFreq_Filters_ComboBox = customtkinter.CTkComboBox(Main, values=TransFreq_Types, width=400, height=55, font=("System", 30, "bold"))
         ConfirmButton = customtkinter.CTkButton(Main, text="Confirm", command=lambda: MainGUI.TransFreq_Confirmation(), width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         QuitButton = customtkinter.CTkButton(Main, text="Quit", command=quit, width=100, height=50, font=("System", 30, "bold"), fg_color="darkgreen")
         global IsTransFreq
+        
         ChooseClassLbl.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight()/2 - 400, anchor="center")
         TransFreq_Filters_ComboBox.place(x=Main.winfo_screenwidth()/2 - 520, y=Main.winfo_screenheight()/2 - 250, anchor="center")
         ConfirmButton.place(x=Main.winfo_screenwidth()/2 - 220, y=Main.winfo_screenheight() /2 - 250, anchor="center")
@@ -673,6 +929,7 @@ class MainGUI():
         ChooseButtonLabel = customtkinter.CTkLabel(Main, text="Choose A Domain Filters", font=("System", 40, "bold"))
         Spatial_Btn = customtkinter.CTkButton(Main, text="Spatial", width=500, height=125, font=("System", 40, "bold"), fg_color="darkgreen", command=lambda: MainGUI.Spatial_Domain_Page())
         TransFreq_Btn = customtkinter.CTkButton(Main, text="Transform & Frequency", width=500, height=125, font=("System", 40, "bold"), fg_color="darkgreen", command=lambda: MainGUI.TransFreq_Domain_Page())
+        
         ChooseButtonLabel.place(x=Main.winfo_screenwidth()/2 - 450, y=Main.winfo_screenheight()/2 - 400, anchor="center")
         Spatial_Btn.place(x=Main.winfo_screenwidth()/2 - 450,y=Main.winfo_screenheight() / 2 - 250, anchor="center")
         TransFreq_Btn.place(x=Main.winfo_screenwidth()/2 -450 ,y=Main.winfo_screenheight() / 2 - 100, anchor="center")
