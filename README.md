@@ -3,6 +3,8 @@ Uses most of the Domain filters (spatial &amp; Frequency).
 
 This Project shows certain algorithmic implementations to process an image and potentially extract features, all packaged in a CTK GUI.
 
+![CustomTkinter_logo_dark](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/ebd4a79b-4fef-4f45-ba0b-a835959eaa54)
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./documentation_images/CustomTkinter_logo_dark.png">
