@@ -5,9 +5,7 @@ This Project shows certain algorithmic implementations to process an image and p
 
 
 <p align="center">
-  <picture>
    ![CustomTkinter_logo_dark](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/ebd4a79b-4fef-4f45-ba0b-a835959eaa54)
-  </picture>
 </p>
 
 ## Included Algorithms
