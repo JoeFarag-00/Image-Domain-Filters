@@ -11,22 +11,22 @@ This Project shows certain algorithmic implementations to process an image and p
 </p>
 
 ## Included Algorithms
-Spatial Domain Filters:
-	Smoothing Spatial Filters
+1.Spatial Domain Filters:
+	1.1 Smoothing Spatial Filters
 		Median Filter
 		Adaptive Median Filter
 		Averaging Filter
 		Gaussian Filter	
-	Sharpening Spatial Filters
+	1.2 Sharpening Spatial Filters
 		Laplacian Operator
 		Unsharp Masking and High boost Filtering
 		Roberts Cross-Gradient Operators
 		Sobel
-	Noise Filters
+	1.3 Noise Filters
 		Impulse Noise
 		Gaussian Noise
 		Uniform Noise
-	Transform / Frequency Domain Filters:
+2.Transform / Frequency Domain Filters:
 		Histogram Equalization
 		Histogram Specification
 		Fourier Transform
