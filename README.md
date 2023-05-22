@@ -23,7 +23,7 @@ Noise Filters: Impulse Noise, Gaussian Noise, and Uniform Noise
 
 ![image](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/0f561c8d-bc5a-4be3-afcf-d0d33ed8afd6)
 
-![image![image](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/73826893-075d-45b2-a1e8-3860716ad9f7)
+![image](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/73826893-075d-45b2-a1e8-3860716ad9f7)
 
 ![image](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/40a00e5b-183a-471f-a374-08fc6895c909)
 
