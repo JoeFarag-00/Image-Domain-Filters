@@ -5,12 +5,12 @@ This Project shows certain algorithmic implementations to process an image and p
 
    ![CustomTkinter_logo_dark](https://github.com/JoeFarag-00/Image-Domain-Filters/assets/88057098/ebd4a79b-4fef-4f45-ba0b-a835959eaa54)
    
-## Included Algorithms
+# Included Algorithms
 # Spatial Domain Filters:
 
-Smoothing Spatial Filters: Median Filter, Adaptive Median Filter, Averaging Filter, and Gaussian Filter	
-Sharpening Spatial Filters: Laplacian Operator, Unsharp Masking and High boost Filtering, Roberts Cross-Gradient Operators, and Sobel
-Noise Filters: Impulse Noise, Gaussian Noise, and Uniform Noise
+1. Smoothing Spatial Filters: Median Filter, Adaptive Median Filter, Averaging Filter, and Gaussian Filter	
+2. Sharpening Spatial Filters: Laplacian Operator, Unsharp Masking and High boost Filtering, Roberts Cross-Gradient Operators, and Sobel
+3. Noise Filters: Impulse Noise, Gaussian Noise, and Uniform Noise
 
 # Transform / Frequency Domain Filters: 
 1. Histogram Equalization
